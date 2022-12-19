@@ -1,5 +1,4 @@
-# keras_cv_stable_diffusion_to_tflite
-Scripts for converting Keras CV Stable Diffusion to tflite.
+# Scripts for converting Keras CV Stable Diffusion models to tflite
 
 Tested with TensorFlow master branch (supposedly, using tf-nightly should be fine)
 
