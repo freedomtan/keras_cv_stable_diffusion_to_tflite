@@ -11,4 +11,5 @@ It's also possible to generate Quantized int8 models with Post-Training Quantiza
 
 ## Testing/Verifying converted tflite models
 Borrowing some code from Keras CV implementation, we can do end-to-end test of converted TFLite models
-* fp32 modeles: https://github.com/freedomtan/keras_cv_stable_diffusion_to_tflite/blob/main/text_to_image_using_converted_tflite_models.ipynb
+* fp32 modeles: [notebook](text_to_image_using_converted_tflite_models.ipynb)
+* dynamic range quantized modeles: [notebook](text_to_image_using_converted_tflite_models_dynamic.ipynb)
