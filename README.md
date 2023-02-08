@@ -19,3 +19,7 @@ Conversion [script](https://github.com/freedomtan/keras_cv_stable_diffusion_to_t
 Borrowing some code from Keras CV implementation, we can do end-to-end test of converted TFLite models
 * fp32 modeles: [notebook](text_to_image_using_converted_tflite_models.ipynb)
 * dynamic range quantized modeles: [notebook](text_to_image_using_converted_tflite_models_dynamic.ipynb)
+
+## Converted models
+I put tflite models I converted to [HuggingFace](https://huggingface.co/freedomtw/stable_diffusion_tflite)
+
