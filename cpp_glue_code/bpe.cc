@@ -148,6 +148,7 @@ vector<int> encode(string line) {
   return codes;
 }
 
+#ifdef __TEST_BPE__
 int main(int argc, char *argv[]) {
   std::ifstream merges_stream(merges_file, std::ifstream::binary);
   std::ifstream vocab_stream(vocab_file, std::ifstream::binary);
@@ -180,3 +181,4 @@ int main(int argc, char *argv[]) {
   }
   cout << "]" << "\n";
 }
+#endif
