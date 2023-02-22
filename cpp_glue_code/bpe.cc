@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <tuple>
@@ -131,6 +132,10 @@ string bpe_encode(string token) {
 #define END_OF_TEXT 49407
 
 vector<int> encode(string line) {
+  // clean up whitespace, replacing all consective ws with single " "
+  regex ws("\\s+");
+  line = regex_replace(line, ws, " ");
+
   // to lower
   transform(line.begin(), line.end(), line.begin(), ::tolower);
   auto tokens = get_tokens(line);
