@@ -1,202 +1,201 @@
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <regex>
-#include <set>
-#include <sstream>
-#include <tuple>
-#include <vector>
+#include "bpe.h"
 
 using namespace std;
 
-class bpe {
- private:
-  string vocab_file = "vocab.txt";
-  string merges_file = "merges.txt";
+vector<string> bpe::get_tokens(string line) {
+  stringstream c(line);
 
-  std::map<std::string, int> vocab;
-  std::vector<tuple<string, string>> merges;
+  vector<string> tokens;
+  string intermediate;
 
-  const int START_OF_TEXT = 49406;
-  const int END_OF_TEXT = 49407;
+  while (getline(c, intermediate, ' ')) {
+    tokens.push_back(intermediate);
+  }
+  return tokens;
+}
 
-  vector<string> get_tokens(string line) {
-    stringstream c(line);
+void bpe::dump_string_vector(vector<string> to_dump) {
+  for (int i = 0; i < to_dump.size(); i++) {
+    if (i != (to_dump.size() - 1))
+      cout << to_dump[i] << ", ";
+    else
+      cout << to_dump[i] << "\n";
+  }
+}
 
-    vector<string> tokens;
-    string intermediate;
+set<tuple<string, string>> bpe::get_pairs(vector<string> token) {
+  set<tuple<string, string>> pairs;
 
-    while (getline(c, intermediate, ' ')) {
-      tokens.push_back(intermediate);
-    }
-    return tokens;
+  for (int i = 0; i < token.size() - 1; i++) {
+    pairs.insert(pairs.end(), make_tuple(token[i], token[i + 1]));
+  }
+  return pairs;
+}
+
+string bpe::concat_vector_to_string(vector<string> to_concat) {
+  string word_to_return;
+
+  for (auto i = to_concat.begin(); i < to_concat.end(); i++) {
+    word_to_return.append(*i);
+  }
+  return word_to_return;
+}
+
+string bpe::bpe_encode(string token) {
+  vector<string> word;
+  for (auto i : token) {
+    word.push_back(string(1, i));
+  }
+  word[token.size() - 1] = word[token.size() - 1] + "</w>";
+  set<tuple<string, string>> pairs = get_pairs(word);
+  if (pairs.size() == 0) {
+    return token + "</w>";
   }
 
-  void dump_string_vector(vector<string> to_dump) {
-    for (int i = 0; i < to_dump.size(); i++) {
-      if (i != (to_dump.size() - 1))
-        cout << to_dump[i] << ", ";
-      else
-        cout << to_dump[i] << "\n";
-    }
-  }
+  while (true) {
+    map<tuple<string, string>, int> can_merges;
 
-  set<tuple<string, string>> get_pairs(vector<string> token) {
-    set<tuple<string, string>> pairs;
-
-    for (int i = 0; i < token.size() - 1; i++) {
-      pairs.insert(pairs.end(), make_tuple(token[i], token[i + 1]));
-    }
-    return pairs;
-  }
-
-  string concat_vector_to_string(vector<string> to_concat) {
-    string word_to_return;
-
-    for (auto i = to_concat.begin(); i < to_concat.end(); i++) {
-      word_to_return.append(*i);
-    }
-    return word_to_return;
-  }
-
-  string bpe_encode(string token) {
-    vector<string> word;
-    for (auto i : token) {
-      word.push_back(string(1, i));
-    }
-    word[token.size() - 1] = word[token.size() - 1] + "</w>";
-    set<tuple<string, string>> pairs = get_pairs(word);
-    if (pairs.size() == 0) {
-      return token + "</w>";
-    }
-
-    while (true) {
-      map<tuple<string, string>, int> can_merges;
-
-      for (tuple<string, string> pair : pairs) {
-        for (int i = 0; i < merges.size(); i++) {
-          if (merges[i] == pair) {
-            can_merges[pair] = i;
-          }
+    for (tuple<string, string> pair : pairs) {
+      for (int i = 0; i < merges.size(); i++) {
+        if (merges[i] == pair) {
+          can_merges[pair] = i;
         }
       }
-      if (can_merges.size() == 0) break;
+    }
+    if (can_merges.size() == 0) break;
 
-      auto min = min_element(can_merges.begin(), can_merges.end(),
-                             [](const auto& lhs, const auto& rhs) {
-                               return lhs.second < rhs.second;
-                             });
-      auto first = get<0>(min->first);
-      auto second = get<1>(min->first);
+    auto min = min_element(can_merges.begin(), can_merges.end(),
+                           [](const auto& lhs, const auto& rhs) {
+                             return lhs.second < rhs.second;
+                           });
+    auto first = get<0>(min->first);
+    auto second = get<1>(min->first);
 
-      vector<string> new_word;
-      int i = 0;
-      while (i < word.size()) {
-        vector<string> remaining(word.begin() + i, word.end());
+    vector<string> new_word;
+    int i = 0;
+    while (i < word.size()) {
+      vector<string> remaining(word.begin() + i, word.end());
 
-        auto found_i = find(word.begin() + i, word.end(), first);
-        auto found = -1;
-        if (found_i != word.end()) found = distance(word.begin(), found_i);
+      auto found_i = find(word.begin() + i, word.end(), first);
+      auto found = -1;
+      if (found_i != word.end()) found = distance(word.begin(), found_i);
 
-        if (found != -1) {
-          vector<string> prefix(word.begin() + i, word.begin() + found);
-          new_word.insert(new_word.end(), prefix.begin(), prefix.end());
+      if (found != -1) {
+        vector<string> prefix(word.begin() + i, word.begin() + found);
+        new_word.insert(new_word.end(), prefix.begin(), prefix.end());
 
-          if ((i < (word.size() - 1)) && word[found + 1] == second) {
-            new_word.push_back(word[found] + word[found + 1]);
-            i = found + 2;
-          } else {
-            new_word.push_back(word[found]);
-            i = found + 1;
-          }
+        if ((i < (word.size() - 1)) && word[found + 1] == second) {
+          new_word.push_back(word[found] + word[found + 1]);
+          i = found + 2;
         } else {
-          new_word.insert(new_word.end(), remaining.begin(), remaining.end());
-          break;
+          new_word.push_back(word[found]);
+          i = found + 1;
         }
-      }
-
-      word = new_word;
-      pairs = get_pairs(new_word);
-    }
-
-    string word_to_return;
-    if (word.size() == 1) {
-      word_to_return = word[0];
-    } else {
-      for (auto i = word.begin(); i < word.end() - 1; i++) {
-        word_to_return = word_to_return + (*i + " ");
-      }
-      word_to_return = word_to_return + word[word.size() - 1];
-    }
-
-    // cout << "word_to_return: " << word_to_return << "\n";
-    return word_to_return;
-  }
-
-  void init() {
-    std::ifstream merges_stream(merges_file, std::ifstream::binary);
-    std::ifstream vocab_stream(vocab_file, std::ifstream::binary);
-
-    string k, v;
-    auto index = 0;
-
-    while (vocab_stream >> v >> index) {
-      vocab[v] = index;
-    }
-
-    while (merges_stream >> k >> v) {
-      merges.push_back(make_tuple(k, v));
-    }
-  }
-
- public:
-  bpe() { init(); }
-
-  vector<int> encode(string line) {
-    // clean up whitespace, replacing all consective ws with single " "
-    regex ws("\\s+");
-    line = regex_replace(line, ws, " ");
-
-    // to lower
-    transform(line.begin(), line.end(), line.begin(), ::tolower);
-    auto tokens = get_tokens(line);
-    if (tokens.size() > 77) {
-      tokens = {tokens.begin(), tokens.begin() + 76};
-    }
-    vector<int> codes;
-    codes.push_back(START_OF_TEXT);
-    for (auto t : tokens) {
-      auto returned = get_tokens(bpe_encode(t));
-      for (auto i = 0; i < returned.size(); i++) {
-        codes.push_back(vocab[returned[i]]);
+      } else {
+        new_word.insert(new_word.end(), remaining.begin(), remaining.end());
+        break;
       }
     }
-    codes.push_back(END_OF_TEXT);
-    if (codes.size() < 77) {
-      auto padding_size = 77 - codes.size();
-      std::vector<int> padding(padding_size, END_OF_TEXT);
-      codes.insert(codes.end(), padding.begin(), padding.end());
-    }
-    return codes;
+
+    word = new_word;
+    pairs = get_pairs(new_word);
   }
-};
+
+  string word_to_return;
+  if (word.size() == 1) {
+    word_to_return = word[0];
+  } else {
+    for (auto i = word.begin(); i < word.end() - 1; i++) {
+      word_to_return = word_to_return + (*i + " ");
+    }
+    word_to_return = word_to_return + word[word.size() - 1];
+  }
+
+  // cout << "word_to_return: " << word_to_return << "\n";
+  return word_to_return;
+}
+
+void bpe::init() {
+  std::ifstream merges_stream(merges_file, std::ifstream::binary);
+  std::ifstream vocab_stream(vocab_file, std::ifstream::binary);
+
+  string k, v;
+  auto index = 0;
+
+  while (vocab_stream >> v >> index) {
+    vocab[v] = index;
+  }
+
+  while (merges_stream >> k >> v) {
+    merges.push_back(make_tuple(k, v));
+  }
+}
+
+// bpe::bpe() { init(); }
+
+vector<int> bpe::encode(string line) {
+  // clean up whitespace, replacing all consective ws with single " "
+  regex ws("\\s+");
+  line = regex_replace(line, ws, " ");
+
+  // to lower
+  transform(line.begin(), line.end(), line.begin(), ::tolower);
+  auto tokens = get_tokens(line);
+  if (tokens.size() > 77) {
+    tokens = {tokens.begin(), tokens.begin() + 76};
+  }
+  vector<int> codes;
+  codes.push_back(START_OF_TEXT);
+  for (auto t : tokens) {
+    auto returned = get_tokens(bpe_encode(t));
+    for (auto i = 0; i < returned.size(); i++) {
+      codes.push_back(vocab[returned[i]]);
+    }
+  }
+  codes.push_back(END_OF_TEXT);
+  if (codes.size() < 77) {
+    auto padding_size = 77 - codes.size();
+    std::vector<int> padding(padding_size, END_OF_TEXT);
+    codes.insert(codes.end(), padding.begin(), padding.end());
+  }
+  return codes;
+}
+
+vector<int> bpe::position_ids() {
+  vector<int> position_ids;
+  for (int i = 0; i < 77; i++) {
+    position_ids.push_back(i);
+  }
+  return position_ids;
+}
 
 #ifdef __TEST_BPE__
 int main(int argc, char* argv[]) {
   bpe bpe_encoder;
 
   string prompt = "a photo of an astronaut riding a horse on Mars";
-  if (argc == 2) 
-    prompt = argv[1];
+  if (argc == 2) prompt = argv[1];
   auto encoded = bpe_encoder.encode(prompt);
 
   cout << "[";
   for (auto i = encoded.begin(); i < encoded.end(); i++) {
-     if (i != (encoded.end() - 1))
-       cout << *i << ", ";
-     else
-       cout << *i;
+    if (i != (encoded.end() - 1))
+      cout << *i << ", ";
+    else
+      cout << *i;
   }
-  cout << "]" << "\n";
+  cout << "]"
+       << "\n";
+
+  auto pos_ids = bpe_encoder.position_ids();
+  cout << "[";
+  for (auto i = pos_ids.begin(); i < pos_ids.end(); i++) {
+    if (i != (pos_ids.end() - 1))
+      cout << *i << ", ";
+    else
+      cout << *i;
+  }
+  cout << "]"
+       << "\n";
 }
 #endif
