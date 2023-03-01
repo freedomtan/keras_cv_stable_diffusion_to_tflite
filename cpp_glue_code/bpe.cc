@@ -15,7 +15,7 @@ vector<string> bpe::get_tokens(string line) {
 }
 
 void bpe::dump_string_vector(vector<string> to_dump) {
-  for (int i = 0; i < to_dump.size(); i++) {
+  for (size_t i = 0; i < to_dump.size(); i++) {
     if (i != (to_dump.size() - 1))
       cout << to_dump[i] << ", ";
     else
@@ -26,7 +26,7 @@ void bpe::dump_string_vector(vector<string> to_dump) {
 set<tuple<string, string>> bpe::get_pairs(vector<string> token) {
   set<tuple<string, string>> pairs;
 
-  for (int i = 0; i < token.size() - 1; i++) {
+  for (size_t i = 0; i < token.size() - 1; i++) {
     pairs.insert(pairs.end(), make_tuple(token[i], token[i + 1]));
   }
   return pairs;
@@ -56,7 +56,7 @@ string bpe::bpe_encode(string token) {
     map<tuple<string, string>, int> can_merges;
 
     for (tuple<string, string> pair : pairs) {
-      for (int i = 0; i < merges.size(); i++) {
+      for (size_t i = 0; i < merges.size(); i++) {
         if (merges[i] == pair) {
           can_merges[pair] = i;
         }
@@ -72,7 +72,7 @@ string bpe::bpe_encode(string token) {
     auto second = get<1>(min->first);
 
     vector<string> new_word;
-    int i = 0;
+    size_t i = 0;
     while (i < word.size()) {
       vector<string> remaining(word.begin() + i, word.end());
 
@@ -148,7 +148,7 @@ vector<int> bpe::encode(string line) {
   codes.push_back(START_OF_TEXT);
   for (auto t : tokens) {
     auto returned = get_tokens(bpe_encode(t));
-    for (auto i = 0; i < returned.size(); i++) {
+    for (size_t i = 0; i < returned.size(); i++) {
       codes.push_back(vocab[returned[i]]);
     }
   }

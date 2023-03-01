@@ -21,6 +21,17 @@ class bpe {
   const int START_OF_TEXT = 49406;
   const int END_OF_TEXT = 49407;
 
+  std::vector<int> _unconditioned_tokens{
+      49406, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+      49407, 49407, 49407, 49407, 49407, 49407, 49407};
+
   vector<string> get_tokens(string line);
   void dump_string_vector(vector<string> to_dump);
   set<tuple<string, string>> get_pairs(vector<string> token);
@@ -33,6 +44,7 @@ class bpe {
 
   vector<int> encode(string line);
   vector<int> position_ids();
+  vector<int> unconditioned_tokens() {return _unconditioned_tokens;}
 };
 
 #endif

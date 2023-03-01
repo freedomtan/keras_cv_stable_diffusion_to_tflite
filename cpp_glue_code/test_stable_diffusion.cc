@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <random>
 
 #include "bpe.h"
 #include "tensorflow/lite/builtin_ops.h"
@@ -9,14 +10,9 @@
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model_builder.h"
 
-float *
-run_text_encoder(string prompt) {
-  bpe bpe_encoder;
-
-  auto encoded = bpe_encoder.encode(prompt);
-  auto pos_ids = bpe_encoder.position_ids();
-
-  auto model = tflite::FlatBufferModel::BuildFromFile("/tmp/sd_tflite/sd_text_encoder_fixed_batch.tflite");
+float *run_text_encoder(vector<int> encoded, vector<int> pos_ids) {
+  auto model = tflite::FlatBufferModel::BuildFromFile(
+      "/tmp/sd_tflite/sd_text_encoder_fixed_batch.tflite");
   if (model == nullptr) {
     cout << "failed to load model "
          << "tflite/sd_text_encoder.tflite\n";
@@ -51,7 +47,7 @@ run_text_encoder(string prompt) {
 
   if (output != NULL) {
     for (int i = 0; i < 16; i++) {
-      std::cout << output[768+i] << "\t";
+      std::cout << output[768 + i] << "\t";
     }
     std::cout << "\n";
   } else {
@@ -61,9 +57,28 @@ run_text_encoder(string prompt) {
   return output;
 }
 
+std::vector<float> get_normal(unsigned numbers, unsigned seed = 5,
+                              float mean = 0.0, float stddev = 1.0) {
+  std::default_random_engine generator(seed);
+  std::normal_distribution<float> distribution(mean, stddev);
+
+  std::vector<float> d;
+  for (unsigned i = 0; i < numbers; i++) d.push_back(distribution(generator));
+
+  return d;
+}
+
 int main(int argc, char *argv[]) {
   string prompt = "a photo of an astronaut riding a horse on Mars";
   if (argc == 2) prompt = argv[1];
 
-  auto encoded_text = run_text_encoder(prompt);
+  bpe bpe_encoder;
+
+  auto encoded = bpe_encoder.encode(prompt);
+  auto pos_ids = bpe_encoder.position_ids();
+
+  auto encoded_text = run_text_encoder(encoded, pos_ids);
+  auto noise = get_normal(64 * 64 * 4);
+  auto unconditioned_text =
+      run_text_encoder(bpe_encoder.unconditioned_tokens(), pos_ids);
 }
