@@ -18,7 +18,7 @@ cc_library(
 )
 
 cc_binary(
-    name = "test_bpe",
+    name = "test_text_encoder",
     srcs = ["test_stable_diffusion.cc"],
     deps = [
       ":bpe",

@@ -4,40 +4,66 @@
 #include "bpe.h"
 #include "tensorflow/lite/builtin_ops.h"
 #include "tensorflow/lite/context_util.h"
-#include "tensorflow/lite/interpreter.h"
-#include "tensorflow/lite/model_builder.h"
 #include "tensorflow/lite/core/api/op_resolver.h"
+#include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model_builder.h"
 
-int main(int argc, char *argv[]) {
+float *
+run_text_encoder(string prompt) {
   bpe bpe_encoder;
 
-  string prompt = "a photo of an astronaut riding a horse on Mars";
-  if (argc == 2) prompt = argv[1];
   auto encoded = bpe_encoder.encode(prompt);
   auto pos_ids = bpe_encoder.position_ids();
 
-  auto model =
-      tflite::FlatBufferModel::BuildFromFile("/tmp/sd/sd_text_encoder.tflite");
+  auto model = tflite::FlatBufferModel::BuildFromFile("/tmp/sd_tflite/sd_text_encoder_fixed_batch.tflite");
   if (model == nullptr) {
-    // Return error.
     cout << "failed to load model "
-         << "/tmp/sd/sd_text_encoder.tflite\n";
-  } else {
-    cout << "here\n";
+         << "tflite/sd_text_encoder.tflite\n";
+    return NULL;
   }
 
-  // Create an Interpreter with an InterpreterBuilder.
   std::unique_ptr<tflite::Interpreter> interpreter;
 
   tflite::ops::builtin::BuiltinOpResolver resolver;
   if (tflite::InterpreterBuilder(*model, resolver)(&interpreter) != kTfLiteOk) {
-    // Return failure.
+    cout << "failed to build interpreter\n";
+    return NULL;
   }
   if (interpreter->AllocateTensors() != kTfLiteOk) {
-    // Return failure.
+    cout << "failed allocate tensors\n";
+    return NULL;
   }
 
-  auto input_size = interpreter->inputs().size();
-  cout << "input_size: " << input_size << "\n";
+  const std::vector<int> inputs = interpreter->inputs();
+  const std::vector<int> outputs = interpreter->outputs();
+
+  std::copy(pos_ids.begin(), pos_ids.end(),
+            interpreter->typed_input_tensor<int>(0));
+  std::copy(encoded.begin(), encoded.end(),
+            interpreter->typed_input_tensor<int>(1));
+
+  if (interpreter->Invoke() != kTfLiteOk) {
+    cout << "Failed to invoke tflite!\n";
+    exit(-1);
+  }
+  auto output = interpreter->typed_tensor<float>(outputs[0]);
+
+  if (output != NULL) {
+    for (int i = 0; i < 16; i++) {
+      std::cout << output[768+i] << "\t";
+    }
+    std::cout << "\n";
+  } else {
+    cout << "how come\n";
+  }
+
+  return output;
+}
+
+int main(int argc, char *argv[]) {
+  string prompt = "a photo of an astronaut riding a horse on Mars";
+  if (argc == 2) prompt = argv[1];
+
+  auto encoded_text = run_text_encoder(prompt);
 }
