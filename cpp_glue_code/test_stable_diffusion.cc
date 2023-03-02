@@ -17,7 +17,7 @@ vector<float> run_text_encoder(vector<int> encoded, vector<int> pos_ids) {
 
   std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
   auto model = tflite::FlatBufferModel::BuildFromFile(
-      "/tmp/sd_tflite/sd_text_encoder_fixed_batch.tflite");
+      "sd_tflite/sd_text_encoder_fixed_batch.tflite");
   if (model == nullptr) {
     cout << "failed to load model "
          << "tflite/sd_text_encoder.tflite\n";
@@ -81,7 +81,7 @@ vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
   vector<float> empty;
   auto model = tflite::FlatBufferModel::BuildFromFile(
       // "/tmp/sd_tflite/sd_diffusion_model_dynamic_fixed_batch.tflite");
-      "/tmp/sd_tflite/sd_diffusion_model_dynamic.tflite");
+      "sd_tflite/sd_diffusion_model_dynamic.tflite");
 
   std::unique_ptr<tflite::Interpreter> interpreter;
   tflite::ops::builtin::BuiltinOpResolver resolver;
@@ -125,7 +125,7 @@ vector<float> run_decoder(vector<float> latent) {
   std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
   vector<float> empty;
   auto model = tflite::FlatBufferModel::BuildFromFile(
-      "/tmp/sd_tflite/sd_decoder_dynamic.tflite");
+      "sd_tflite/sd_decoder_dynamic.tflite");
 
   std::unique_ptr<tflite::Interpreter> interpreter;
   tflite::ops::builtin::BuiltinOpResolver resolver;
@@ -198,4 +198,12 @@ int main(int argc, char *argv[]) {
     latent.assign(std::begin(l), std::end(l));
   }
   auto decoded = run_decoder(latent);
+  std::valarray<float> d(decoded.data(), decoded.size());
+  d = (d + 1) / 2 * 255;
+  vector<uint8_t> decoded_uint8;
+  for (auto e: d) {
+      if (e > 255.0) d = 255;
+      if (e < 0.0) d = 0;
+      decoded_uint8.push_back((uint8_t) e);
+  }
 }

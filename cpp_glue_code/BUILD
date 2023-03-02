@@ -18,7 +18,7 @@ cc_library(
 )
 
 cc_binary(
-    name = "test_text_encoder",
+    name = "test_stable_diffusion",
     srcs = ["test_stable_diffusion.cc"],
     deps = [
       ":libsd",
