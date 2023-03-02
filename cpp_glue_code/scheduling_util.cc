@@ -1,8 +1,4 @@
-#include <cmath>
-#include <iostream>
-#include <map>
-#include <tuple>
-#include <vector>
+#include "scheduling_util.h"
 
 std::vector<int> get_timesteps(int start, int stop, int delta) {
   std::vector<int> timesteps;
@@ -226,9 +222,8 @@ std::tuple<std::vector<float>, std::vector<float>> get_initial_alphas(
   return make_tuple(alphas, alphas_prev);
 }
 
-std::vector<float> get_timestep_embedding(int timestep, int batch_size = 1,
-                                          int dim = 320,
-                                          int max_period = 10000) {
+std::vector<float> get_timestep_embedding(int timestep, int batch_size, int dim,
+                                          int max_period) {
   std::vector<float> embedding_cos;
   std::vector<float> embedding_sin;
   auto half = dim / 2;
@@ -253,6 +248,7 @@ std::vector<float> get_timestep_embedding(int timestep, int batch_size = 1,
   return embedding;
 }
 
+#ifdef __TEST_BPE_
 int main(int argc, char *argv[]) {
   int num_steps = 30;
   auto timesteps = get_timesteps(1, 1000, 1000 / num_steps);
@@ -262,3 +258,4 @@ int main(int argc, char *argv[]) {
     std::cout << std::get<0>(as)[i] << ", " << std::get<1>(as)[i] << "\n";
   }
 }
+#endif

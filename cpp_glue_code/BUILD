@@ -10,18 +10,18 @@ package(
 )
 
 cc_library(
-    name = "bpe",
+    name = "libsd",
     srcs = [
-        "bpe.cc",
+        "bpe.cc", "scheduling_util.cc"
     ],
-    hdrs = ["bpe.h"],
+    hdrs = ["bpe.h", "scheduling_util.h"],
 )
 
 cc_binary(
     name = "test_text_encoder",
     srcs = ["test_stable_diffusion.cc"],
     deps = [
-      ":bpe",
+      ":libsd",
       "@org_tensorflow//tensorflow/lite:framework",
       "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
     ],
