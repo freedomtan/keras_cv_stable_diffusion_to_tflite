@@ -44,7 +44,7 @@ class bpe {
 
   vector<int> encode(string line);
   vector<int> position_ids();
-  vector<int> unconditioned_tokens() {return _unconditioned_tokens;}
+  vector<int> unconditioned_tokens() { return _unconditioned_tokens; }
 };
 
 #endif

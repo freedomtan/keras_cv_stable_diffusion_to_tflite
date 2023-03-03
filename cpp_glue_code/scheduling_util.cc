@@ -215,9 +215,9 @@ std::tuple<std::vector<float>, std::vector<float>> get_initial_alphas(
   std::vector<float> alphas, alphas_prev;
 
   alphas_prev.push_back(1.0);
-  for (auto i = alpha_cum.begin(); i < alpha_cum.end(); i++) {
-    alphas.push_back(*i);
-    if (i < alpha_cum.end() - 1) alphas_prev.push_back(*i);
+  for (auto i = timesteps.begin(); i < timesteps.end(); i++) {
+    alphas.push_back(alpha_cum[*i]);
+    if (i < timesteps.end() - 1) alphas_prev.push_back(alpha_cum[*i]);
   }
   return make_tuple(alphas, alphas_prev);
 }
@@ -226,10 +226,10 @@ std::vector<float> get_timestep_embedding(int timestep, int batch_size, int dim,
                                           int max_period) {
   std::vector<float> embedding_cos;
   std::vector<float> embedding_sin;
+
   auto half = dim / 2;
   for (int i = 0; i < half; i++) {
-    // auto freq = expf(-logf(max_period) * i / half);
-    auto freq = powf(max_period, i * 1.0 / half);
+    auto freq = expf(-logf(max_period) * i / half);
     embedding_cos.push_back(cosf(timestep * freq));
     embedding_sin.push_back(sinf(timestep * freq));
   }
@@ -248,7 +248,7 @@ std::vector<float> get_timestep_embedding(int timestep, int batch_size, int dim,
   return embedding;
 }
 
-#ifdef __TEST_BPE_
+#ifdef __TEST_BPE__
 int main(int argc, char *argv[]) {
   int num_steps = 30;
   auto timesteps = get_timesteps(1, 1000, 1000 / num_steps);
@@ -257,5 +257,10 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < len; i++) {
     std::cout << std::get<0>(as)[i] << ", " << std::get<1>(as)[i] << "\n";
   }
+  auto e = get_timestep_embedding(801);
+  for (int i = 0; i < 16; i++) {
+    std::cout << e[i] << "\t";
+  }
+  std::cout << "\n";
 }
 #endif
