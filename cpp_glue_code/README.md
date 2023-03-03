@@ -7,7 +7,8 @@ To run Stable Diffusion end-to-end on Android, we need some glue code
 
 # How to build 
 * set ANDROID_NDK_HOME environment variable
-* 'bazel build -c android_arm64 :test_stable_diffusion`  to build binary for android_arm64
-  ('bazel build -c android_arm64 :test_stable_diffusion` to build binary for host machine)
-
-
+* `bazel build -c android_arm64 :test_stable_diffusion`  to build binary for android_arm64
+  (`bazel build -c android_arm64 :test_stable_diffusion` to build binary for host machine)
+  
+# How run it
+With `bazel-bin/test_stable_diffusion`, we can get a raw rgb file named`decoded.raw`. With tools such as ImageMagick (`convert -depth 8 -size 512x512+0 rgb:decoded.raw decoded.png`), we can got .png file.
