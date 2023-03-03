@@ -1,3 +1,5 @@
+#include <getopt.h>
+
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -155,8 +157,33 @@ void dump_vector(vector<float> v) {
 }
 
 int main(int argc, char *argv[]) {
+  unsigned seed = 5;
+  int num_steps = 25;
+  int ch;
+  /* options descriptor */
+  static struct option longopts[] = {
+      {"seed", required_argument, NULL, 's'},
+      {"num_steps", required_argument, NULL, 'n'},
+      {NULL, 0, NULL, 0}};
+
+  while ((ch = getopt_long(argc, argv, "s:n:", longopts, NULL)) != -1) {
+    switch (ch) {
+      case 's':
+        seed = atoi(optarg);
+        break;
+      case 'n':
+        num_steps = atoi(optarg);
+        break;
+      default:
+        // usage();
+        break;
+    }
+  }
+  argc -= optind;
+  argv += optind;
+
   string prompt = "a photo of an astronaut riding a horse on Mars";
-  if (argc == 2) prompt = argv[1];
+  if (argc == 1) prompt = argv[0];
 
   bpe bpe_encoder;
 
@@ -168,9 +195,8 @@ int main(int argc, char *argv[]) {
       run_text_encoder(bpe_encoder.unconditioned_tokens(), pos_ids);
 
   float unconditional_guidance_scale = 7.5;
-  auto noise = get_normal(64 * 64 * 4);
+  auto noise = get_normal(64 * 64 * 4, seed);
   auto latent = noise;
-  int num_steps = 25;
   auto timesteps = get_timesteps(1, 1000, 1000 / num_steps);
   auto alphas_tuple = get_initial_alphas(timesteps);
   auto alphas = get<0>(alphas_tuple);
