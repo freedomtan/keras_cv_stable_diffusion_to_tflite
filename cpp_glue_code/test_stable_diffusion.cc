@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <random>
@@ -202,8 +203,11 @@ int main(int argc, char *argv[]) {
   d = (d + 1) / 2 * 255;
   vector<uint8_t> decoded_uint8;
   for (auto e: d) {
-      if (e > 255.0) d = 255;
-      if (e < 0.0) d = 0;
+      if (e > 255.0) e = 255;
+      if (e < 0.0) e = 0;
       decoded_uint8.push_back((uint8_t) e);
   }
+
+  std::ofstream rgb_file("decoded.raw", std::ios::out | std::ofstream::binary);
+  std::copy(decoded_uint8.begin(), decoded_uint8.end(), std::ostreambuf_iterator<char>(rgb_file));
 }
