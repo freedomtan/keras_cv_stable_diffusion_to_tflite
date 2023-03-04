@@ -12,6 +12,10 @@ To run Stable Diffusion end-to-end on Android, we need some glue code
   
 # How run it
 With `bazel-bin/test_stable_diffusion`, we can get a raw rgb file named`decoded.raw`. With tools such as ImageMagick (`convert -depth 8 -size 512x512+0 rgb:decoded.raw decoded.png`), we can got .png file.
+## where to get the 3 tflite models
+You can get them 
+* by converting from Keras CV models with the [script](https://github.com/freedomtan/keras_cv_stable_diffusion_to_tflite/blob/main/convert_to_tflite_models_with_dynamic_range.py), or 
+* from [HuggingFace](https://huggingface.co/freedomtw/stable_diffusion_tflite/tree/main)
 
 # TODO
 Currently, it takes only one arguement, the prompt, there are many parameters we can change,e.g., number of steps, batch size, noise, etc.
