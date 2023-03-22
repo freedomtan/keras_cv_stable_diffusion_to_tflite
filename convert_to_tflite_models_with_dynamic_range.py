@@ -8,6 +8,7 @@ model = keras_cv.models.StableDiffusion(img_width=512, img_height=512)
 text_encoder_model = model.text_encoder
 decoder_model = model.decoder
 diffusion_model = model.diffusion_model
+image_encoder_model = model.image_encoder
 
 # convert models to tflite
 converter1 = tf.lite.TFLiteConverter.from_keras_model(text_encoder_model)
@@ -30,3 +31,10 @@ tflite_decoder = converter3.convert()
 
 with open('/tmp/sd_decoder_dynamic.tflite', 'wb') as f:
     f.write(tflite_decoder)
+
+converter4 = tf.lite.TFLiteConverter.from_keras_model(image_encoder_model)
+converter4.optimizations = [tf.lite.Optimize.DEFAULT]
+tflite_image_encoder = converter4.convert()
+
+with open('/tmp/sd_image_decoder_dynamic.tflite', 'wb') as f:
+    f.write(tflite_image_encoder)
