@@ -12,9 +12,12 @@ package(
 cc_library(
     name = "libsd",
     srcs = [
-        "bpe.cc", "scheduling_util.cc"
+        "bpe.cc", "scheduling_util.cc", "inpainting_util.cc"
     ],
-    hdrs = ["bpe.h", "scheduling_util.h"],
+    hdrs = ["bpe.h", "scheduling_util.h", "inpainting_util.h"],
+    deps = ["@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
+      "@org_tensorflow//tensorflow/lite:framework",
+],
 )
 
 cc_binary(
@@ -32,6 +35,18 @@ cc_binary(
 cc_binary(
     name = "test_stable_diffusion_2_in_1",
     srcs = ["test_stable_diffusion_2_in_1.cc"],
+    deps = [
+      ":libsd",
+      "@org_tensorflow//tensorflow/lite:framework",
+      "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
+    ],
+    copts = tflite_copts(),
+    linkopts = android_linkopts(),
+)
+
+cc_binary(
+    name = "test_stable_diffusion_inpainting",
+    srcs = ["test_stable_diffusion_inpainting.cc"],
     deps = [
       ":libsd",
       "@org_tensorflow//tensorflow/lite:framework",
