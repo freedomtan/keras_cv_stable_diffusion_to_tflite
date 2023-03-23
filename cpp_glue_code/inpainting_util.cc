@@ -15,7 +15,7 @@ std::vector<float> read_raw_image(std::string filename)
   return normalized_image;
 }
 
-std::vector<float> maxpool2d(std::vector<float> in, int ksize, int strides, std::string padding) {
+std::vector<float> maxpool2d(std::vector<float> in, int width, int height, int ksize, int strides, std::string padding) {
   std::unique_ptr<tflite::Interpreter> interpreter(new tflite::Interpreter);
 
   int base_index = 0;
@@ -30,9 +30,9 @@ std::vector<float> maxpool2d(std::vector<float> in, int ksize, int strides, std:
 
   TfLiteQuantizationParams quant;
   interpreter->SetTensorParametersReadWrite(0, kTfLiteFloat32, "input",
-                                            {1, 512, 512, 1}, quant);
-  interpreter->SetTensorParametersReadWrite(1, kTfLiteFloat32, "input",
-                                            {1, 64, 64, 1}, quant);
+                                            {1, width, height, 1}, quant);
+  interpreter->SetTensorParametersReadWrite(1, kTfLiteFloat32, "output",
+                                            {1, width/strides, height/strides, 1}, quant);
 
   tflite::ops::builtin::BuiltinOpResolver resolver;
   const TfLiteRegistration* max_pool2d_op =
