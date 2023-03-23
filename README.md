@@ -20,6 +20,10 @@ Borrowing some code from Keras CV implementation, we can do end-to-end test of c
 * fp32 modeles: [notebook](text_to_image_using_converted_tflite_models.ipynb)
 * dynamic range quantized modeles: [notebook](text_to_image_using_converted_tflite_models_dynamic.ipynb)
 
+### test image encoder model with inpainting 
+* dynamice range quantized models: [notebook](inpainting_using_converted_tflite_models_dynamic_2_in_1.ipynb)
+The ['man-on-skateboard-cropped.png'](man-on-skateboard-cropped.png) is from this [tutorial](https://www.assemblyai.com/blog/stable-diffusion-in-keras-a-simple-tutorial/)
+
 ## Converted models
 I put tflite models I converted to [HuggingFace](https://huggingface.co/freedomtw/stable_diffusion_tflite)
 
