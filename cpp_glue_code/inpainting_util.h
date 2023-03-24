@@ -11,6 +11,7 @@
 #include "tensorflow/lite/kernels/register.h"
 
 std::vector<float> read_raw_image(std::string filename);
+std::vector<float> read_raw_mask(std::string filename);
 std::vector<float> maxpool2d(std::vector<float> in, int width, int height, int ksize, int strides, std::string padding);
 
 #endif
