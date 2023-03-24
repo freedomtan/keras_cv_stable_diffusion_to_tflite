@@ -1,12 +1,14 @@
 #include "inpainting_util.h"
 
 std::vector<float> read_raw_image(std::string filename) {
-  std::ifstream raw_image_stream(filename, std::ios::in |std::ios::binary);
+  std::ifstream raw_image_stream(filename, std::ios::in | std::ios::binary);
 
-  std::vector<uint8_t> contents((std::istreambuf_iterator<char>(raw_image_stream)), std::istreambuf_iterator<char>());
+  std::vector<uint8_t> contents(
+      (std::istreambuf_iterator<char>(raw_image_stream)),
+      std::istreambuf_iterator<char>());
   std::vector<float> normalized_image;
 
-  for (int i=0; i < contents.size(); i++) {
+  for (int i = 0; i < contents.size(); i++) {
     normalized_image.push_back(contents[i] / 255.0 * 2.0 - 1.0);
   }
   return normalized_image;

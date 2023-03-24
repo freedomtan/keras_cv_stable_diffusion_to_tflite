@@ -70,7 +70,8 @@ std::vector<float> get_normal(unsigned numbers, unsigned seed = 5,
 }
 
 vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
-                                  vector<float> u_context, vector<float> context) {
+                                  vector<float> u_context,
+                                  vector<float> context) {
 #if __DEBUG__
   std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
 #endif
@@ -101,15 +102,15 @@ vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
   std::copy(latent.begin(), latent.end(),
             interpreter->typed_input_tensor<float>(0));
   std::copy(latent.begin(), latent.end(),
-            interpreter->typed_input_tensor<float>(0)+latent.size());
+            interpreter->typed_input_tensor<float>(0) + latent.size());
   std::copy(t_emb.begin(), t_emb.end(),
             interpreter->typed_input_tensor<float>(1));
   std::copy(t_emb.begin(), t_emb.end(),
-            interpreter->typed_input_tensor<float>(1)+t_emb.size());
+            interpreter->typed_input_tensor<float>(1) + t_emb.size());
   std::copy(u_context.begin(), u_context.end(),
             interpreter->typed_input_tensor<float>(2));
   std::copy(context.begin(), context.end(),
-            interpreter->typed_input_tensor<float>(2)+context.size());
+            interpreter->typed_input_tensor<float>(2) + context.size());
 
   interpreter->SetAllowFp16PrecisionForFp32(true);
   interpreter->SetNumThreads(4);
@@ -217,9 +218,12 @@ int main(int argc, char *argv[]) {
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
 
-    auto concated = run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
-    vector<float> unconditional_latent(concated.begin(), concated.begin() + (concated.size() / 2));
-    latent = vector<float>(concated.begin() + (concated.size() / 2), concated.end() );
+    auto concated =
+        run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
+    vector<float> unconditional_latent(
+        concated.begin(), concated.begin() + (concated.size() / 2));
+    latent =
+        vector<float>(concated.begin() + (concated.size() / 2), concated.end());
 
     std::valarray<float> l(latent.data(), latent.size());
     std::valarray<float> l_prev(latent_prev.data(), latent_prev.size());

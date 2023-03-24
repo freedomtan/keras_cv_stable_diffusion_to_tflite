@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
       }
       std::valarray<float> n(noise.data(), noise.size());
 
-      // k_l: known_latent 
+      // k_l: known_latent
       auto k_l = sqrtf(a_prev) * k_x0 + sqrtf(1 - a_prev) * n;
       l = m * k_l + (1 - m) * l;
 
@@ -306,5 +306,4 @@ int main(int argc, char *argv[]) {
   std::ofstream rgb_file("decoded.raw", std::ios::out | std::ofstream::binary);
   std::copy(decoded_uint8.begin(), decoded_uint8.end(),
             std::ostreambuf_iterator<char>(rgb_file));
-
 }
