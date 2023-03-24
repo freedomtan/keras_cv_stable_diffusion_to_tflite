@@ -36,5 +36,5 @@ converter4 = tf.lite.TFLiteConverter.from_keras_model(image_encoder_model)
 converter4.optimizations = [tf.lite.Optimize.DEFAULT]
 tflite_image_encoder = converter4.convert()
 
-with open('/tmp/sd_image_decoder_dynamic.tflite', 'wb') as f:
+with open('/tmp/sd_image_encoder_dynamic.tflite', 'wb') as f:
     f.write(tflite_image_encoder)
