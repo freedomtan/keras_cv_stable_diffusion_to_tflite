@@ -13,9 +13,11 @@ http_archive(
 
 # Initialize tensorflow workspace.
 load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
+
 tf_workspace3()
 
 load("@org_tensorflow//tensorflow:workspace2.bzl", "tf_workspace2")
+
 tf_workspace2()
 
 # Android.
