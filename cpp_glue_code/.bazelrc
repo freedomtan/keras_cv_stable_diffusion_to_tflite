@@ -29,3 +29,6 @@ test --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
 
 # dont use sandbox
 build --spawn_strategy=standalone
+
+# build opt by default
+build: -c opt
