@@ -15,10 +15,17 @@
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model_builder.h"
 
+#if __DEBUG__
+using namespace std::literals;
+std::chrono::time_point<std::chrono::system_clock> start_time;
+#endif
+
 vector<float> run_text_encoder(vector<int> encoded, vector<int> pos_ids) {
   vector<float> empty;
 #if __DEBUG__
-  std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
+  auto now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
 #endif
   auto model = tflite::FlatBufferModel::BuildFromFile(
       "sd_tflite/sd_text_encoder_dynamic.tflite");
@@ -55,6 +62,11 @@ vector<float> run_text_encoder(vector<int> encoded, vector<int> pos_ids) {
   auto output = interpreter->typed_tensor<float>(outputs[0]);
   std::vector<float> o(output,
                        output + interpreter->tensor(outputs[0])->bytes / 4);
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   return o;
 }
 
@@ -73,7 +85,9 @@ vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
                                   vector<float> u_context,
                                   vector<float> context) {
 #if __DEBUG__
-  std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
+  auto now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
 #endif
   vector<float> empty;
   auto model = tflite::FlatBufferModel::BuildFromFile(
@@ -115,20 +129,37 @@ vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
   interpreter->SetAllowFp16PrecisionForFp32(true);
   interpreter->SetNumThreads(4);
 
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   if (interpreter->Invoke() != kTfLiteOk) {
     cout << "Failed to invoke tflite!\n";
     exit(-1);
   }
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
 
   auto output = interpreter->typed_tensor<float>(outputs[0]);
   std::vector<float> o(output,
                        output + interpreter->tensor(outputs[0])->bytes / 4);
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   return o;
 }
 
 vector<float> run_decoder(vector<float> latent) {
 #if __DEBUG__
-  std::cout << __LINE__ << ": " << __FUNCTION__ << "\n";
+  auto now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
 #endif
   vector<float> empty;
   auto model = tflite::FlatBufferModel::BuildFromFile(
@@ -157,6 +188,11 @@ vector<float> run_decoder(vector<float> latent) {
   auto output = interpreter->typed_output_tensor<float>(0);
   std::vector<float> o(output,
                        output + interpreter->tensor(outputs[0])->bytes / 4);
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   return o;
 }
 
@@ -201,6 +237,9 @@ int main(int argc, char *argv[]) {
   auto encoded = bpe_encoder.encode(prompt);
   auto pos_ids = bpe_encoder.position_ids();
 
+#if __DEBUG__
+  start_time = std::chrono::system_clock::now();
+#endif
   auto encoded_text = run_text_encoder(encoded, pos_ids);
   auto unconditional_text =
       run_text_encoder(bpe_encoder.unconditioned_tokens(), pos_ids);
