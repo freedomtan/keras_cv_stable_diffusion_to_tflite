@@ -245,7 +245,17 @@ int main(int argc, char *argv[]) {
       run_text_encoder(bpe_encoder.unconditioned_tokens(), pos_ids);
 
   float unconditional_guidance_scale = 7.5;
+#if __DEBUG__
+  auto now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   auto noise = get_normal(64 * 64 * 4, seed);
+#if __DEBUG__
+  now = std::chrono::system_clock::now();
+  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+            << __FUNCTION__ << "\n";
+#endif
   auto latent = noise;
   auto timesteps = get_timesteps(1, 1000, 1000 / num_steps);
   auto alphas_tuple = get_initial_alphas(timesteps);
@@ -254,11 +264,21 @@ int main(int argc, char *argv[]) {
 
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";
+#if __DEBUG__
+    now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
+#endif
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
 
     auto concated =
         run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
+#if __DEBUG__
+    now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
+#endif
     vector<float> unconditional_latent(
         concated.begin(), concated.begin() + (concated.size() / 2));
     latent =
@@ -275,6 +295,11 @@ int main(int argc, char *argv[]) {
     auto prev_x0 = (l_prev - sqrtf(1.0 - a_t) * l) / sqrtf(a_t);
     l = (l * sqrtf(1.0 - a_prev) + sqrtf(a_prev) * prev_x0);
     latent.assign(std::begin(l), std::end(l));
+#if __DEBUG__
+    now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
+#endif
   }
   auto decoded = run_decoder(latent);
   std::valarray<float> d(decoded.data(), decoded.size());

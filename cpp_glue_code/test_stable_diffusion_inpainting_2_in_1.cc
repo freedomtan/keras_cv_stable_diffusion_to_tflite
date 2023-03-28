@@ -1,6 +1,5 @@
 #include <getopt.h>
 
-#include <ctime>
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -88,7 +87,8 @@ std::vector<float> get_normal(unsigned numbers, unsigned seed = 5,
 }
 
 vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
-                                  vector<float> u_context, vector<float> context) {
+                                  vector<float> u_context,
+                                  vector<float> context) {
 #if __DEBUG__
   auto now = std::chrono::system_clock::now();
   std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
@@ -126,7 +126,6 @@ vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
             interpreter->typed_input_tensor<float>(2));
   std::copy(context.begin(), context.end(),
             interpreter->typed_input_tensor<float>(2) + context.size());
-
 
   interpreter->SetAllowFp16PrecisionForFp32(true);
   interpreter->SetNumThreads(4);
@@ -331,18 +330,12 @@ int main(int argc, char *argv[]) {
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
     for (int j = 0; j < num_resample; j++) {
-#if 0
-      auto unconditional_latent =
-          run_diffusion_model(latent, t_emb, unconditional_text);
-      latent = run_diffusion_model(latent, t_emb, encoded_text);
-#endif
       auto concated =
-        run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
-    vector<float> unconditional_latent(
-        concated.begin(), concated.begin() + (concated.size() / 2));
-    latent =
-        vector<float>(concated.begin() + (concated.size() / 2), concated.end());
-
+          run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
+      vector<float> unconditional_latent(
+          concated.begin(), concated.begin() + (concated.size() / 2));
+      latent = vector<float>(concated.begin() + (concated.size() / 2),
+                             concated.end());
 
       std::valarray<float> l(latent.data(), latent.size());
       std::valarray<float> l_prev(latent_prev.data(), latent_prev.size());
