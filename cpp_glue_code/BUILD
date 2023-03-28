@@ -62,3 +62,15 @@ cc_binary(
         "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
     ],
 )
+
+cc_binary(
+    name = "test_stable_diffusion_inpainting_2_in_1",
+    srcs = ["test_stable_diffusion_inpainting_2_in_1.cc"],
+    deps = [
+      ":libsd",
+      "@org_tensorflow//tensorflow/lite:framework",
+      "@org_tensorflow//tensorflow/lite/kernels:builtin_ops",
+    ],
+    copts = tflite_copts(),
+    linkopts = android_linkopts(),
+)
