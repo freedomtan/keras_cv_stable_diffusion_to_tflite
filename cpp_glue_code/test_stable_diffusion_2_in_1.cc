@@ -14,6 +14,7 @@
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model_builder.h"
+#include "tflite_util.h"
 
 #if __DEBUG__
 using namespace std::literals;
@@ -79,80 +80,6 @@ std::vector<float> get_normal(unsigned numbers, unsigned seed = 5,
   for (unsigned i = 0; i < numbers; i++) d.push_back(distribution(generator));
 
   return d;
-}
-
-vector<float> run_diffusion_model(vector<float> latent, vector<float> t_emb,
-                                  vector<float> u_context,
-                                  vector<float> context) {
-#if __DEBUG__
-  auto now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
-#endif
-  vector<float> empty;
-  auto model = tflite::FlatBufferModel::BuildFromFile(
-      // "/tmp/sd_tflite/sd_diffusion_model_dynamic_fixed_batch.tflite");
-      "sd_tflite/sd_diffusion_model_dynamic.tflite");
-
-  std::unique_ptr<tflite::Interpreter> interpreter;
-  tflite::ops::builtin::BuiltinOpResolver resolver;
-  if (tflite::InterpreterBuilder(*model, resolver)(&interpreter) != kTfLiteOk) {
-    cout << "failed allocate tensors\n";
-    return empty;
-  }
-  const std::vector<int> inputs = interpreter->inputs();
-  const std::vector<int> outputs = interpreter->outputs();
-
-  interpreter->ResizeInputTensor(0, vector<int>({2, 64, 64, 4}));
-  interpreter->ResizeInputTensor(1, vector<int>({2, 320}));
-  interpreter->ResizeInputTensor(2, vector<int>({2, 77, 768}));
-
-  if (interpreter->AllocateTensors() != kTfLiteOk) {
-    cout << "failed allocate tensors\n";
-    return empty;
-  }
-
-  // latent, t_emb, context
-  std::copy(latent.begin(), latent.end(),
-            interpreter->typed_input_tensor<float>(0));
-  std::copy(latent.begin(), latent.end(),
-            interpreter->typed_input_tensor<float>(0) + latent.size());
-  std::copy(t_emb.begin(), t_emb.end(),
-            interpreter->typed_input_tensor<float>(1));
-  std::copy(t_emb.begin(), t_emb.end(),
-            interpreter->typed_input_tensor<float>(1) + t_emb.size());
-  std::copy(u_context.begin(), u_context.end(),
-            interpreter->typed_input_tensor<float>(2));
-  std::copy(context.begin(), context.end(),
-            interpreter->typed_input_tensor<float>(2) + context.size());
-
-  interpreter->SetAllowFp16PrecisionForFp32(true);
-  interpreter->SetNumThreads(4);
-
-#if __DEBUG__
-  now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
-#endif
-  if (interpreter->Invoke() != kTfLiteOk) {
-    cout << "Failed to invoke tflite!\n";
-    exit(-1);
-  }
-#if __DEBUG__
-  now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
-#endif
-
-  auto output = interpreter->typed_tensor<float>(outputs[0]);
-  std::vector<float> o(output,
-                       output + interpreter->tensor(outputs[0])->bytes / 4);
-#if __DEBUG__
-  now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
-#endif
-  return o;
 }
 
 vector<float> run_decoder(vector<float> latent) {
@@ -262,6 +189,8 @@ int main(int argc, char *argv[]) {
   auto alphas = get<0>(alphas_tuple);
   auto alphas_prev = get<1>(alphas_tuple);
 
+  auto diffusion = diffusion_runner2("sd_tflite/sd_diffusion_model_dynamic.tflite");
+
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";
 #if __DEBUG__
@@ -271,9 +200,8 @@ int main(int argc, char *argv[]) {
 #endif
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
-
-    auto concated =
-        run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
+    auto concated = diffusion.diffusion_run(latent, t_emb, unconditional_text,
+                                            encoded_text);
 #if __DEBUG__
     now = std::chrono::system_clock::now();
     std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "

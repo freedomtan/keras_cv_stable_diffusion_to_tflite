@@ -20,6 +20,7 @@ cc_library(
         "bpe.h",
         "inpainting_util.h",
         "scheduling_util.h",
+        "tflite_util.h",
     ],
     deps = [
         "@org_tensorflow//tensorflow/lite:framework",
