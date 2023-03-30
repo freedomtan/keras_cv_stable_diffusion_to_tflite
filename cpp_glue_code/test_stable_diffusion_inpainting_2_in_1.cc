@@ -16,6 +16,7 @@
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model_builder.h"
+#include "tflite_util.h"
 
 #if __DEBUG__
 using namespace std::literals;
@@ -324,14 +325,16 @@ int main(int argc, char *argv[]) {
   auto alphas = get<0>(alphas_tuple);
   auto alphas_prev = get<1>(alphas_tuple);
 
+  auto diffusion = diffusion_runner2();
+
   vector<float> noise;
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
     for (int j = 0; j < num_resample; j++) {
-      auto concated =
-          run_diffusion_model(latent, t_emb, unconditional_text, encoded_text);
+      auto concated = diffusion.diffusion_run(latent, t_emb, unconditional_text,
+                                              encoded_text);
       vector<float> unconditional_latent(
           concated.begin(), concated.begin() + (concated.size() / 2));
       latent = vector<float>(concated.begin() + (concated.size() / 2),

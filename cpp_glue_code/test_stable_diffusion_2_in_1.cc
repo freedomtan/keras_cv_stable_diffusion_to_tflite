@@ -189,7 +189,8 @@ int main(int argc, char *argv[]) {
   auto alphas = get<0>(alphas_tuple);
   auto alphas_prev = get<1>(alphas_tuple);
 
-  auto diffusion = diffusion_runner2("sd_tflite/sd_diffusion_model_dynamic.tflite");
+  auto diffusion =
+      diffusion_runner2("sd_tflite/sd_diffusion_model_dynamic.tflite");
 
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";

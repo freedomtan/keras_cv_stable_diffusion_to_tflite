@@ -91,12 +91,10 @@ class diffusion_runner : tflite_runner {
 
  private:
   std::unique_ptr<tflite::Interpreter> interpreter;
-  std::unique_ptr<tflite::FlatBufferModel> model;
-  tflite::ops::builtin::BuiltinOpResolver resolver;
 };
 
 class diffusion_runner2 : tflite_runner {
-public:
+ public:
   diffusion_runner2()
       : diffusion_runner2("sd_tflite/sd_diffusion_model_dynamic.tflite") {}
 
@@ -161,10 +159,9 @@ public:
 #endif
     return o;
   }
+
  private:
   std::unique_ptr<tflite::Interpreter> interpreter;
-  std::unique_ptr<tflite::FlatBufferModel> model;
-  tflite::ops::builtin::BuiltinOpResolver resolver;
 };
 
 #endif

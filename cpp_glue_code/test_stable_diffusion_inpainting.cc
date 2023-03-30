@@ -15,6 +15,12 @@
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/kernels/register.h"
 #include "tensorflow/lite/model_builder.h"
+#include "tflite_util.h"
+
+#if __DEBUG__
+using namespace std::literals;
+std::chrono::time_point<std::chrono::system_clock> start_time;
+#endif
 
 vector<float> run_text_encoder(vector<int> encoded, vector<int> pos_ids) {
   vector<float> empty;
@@ -225,6 +231,10 @@ int main(int argc, char *argv[]) {
   auto encoded = bpe_encoder.encode(prompt);
   auto pos_ids = bpe_encoder.position_ids();
 
+#if __DEBUG__
+  start_time = std::chrono::system_clock::now();
+#endif
+
   std::string image_file = "man-on-skateboard-cropped.rgb";
   std::string mask_file = "mask.bin";
 
@@ -258,6 +268,8 @@ int main(int argc, char *argv[]) {
   auto alphas = get<0>(alphas_tuple);
   auto alphas_prev = get<1>(alphas_tuple);
 
+  auto diffusion = diffusion_runner();
+
   vector<float> noise;
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";
@@ -265,8 +277,8 @@ int main(int argc, char *argv[]) {
     auto t_emb = get_timestep_embedding(timesteps[i]);
     for (int j = 0; j < num_resample; j++) {
       auto unconditional_latent =
-          run_diffusion_model(latent, t_emb, unconditional_text);
-      latent = run_diffusion_model(latent, t_emb, encoded_text);
+          diffusion.diffusion_run(latent, t_emb, unconditional_text);
+      latent = diffusion.diffusion_run(latent, t_emb, encoded_text);
 
       std::valarray<float> l(latent.data(), latent.size());
       std::valarray<float> l_prev(latent_prev.data(), latent_prev.size());

@@ -170,23 +170,24 @@ int main(int argc, char *argv[]) {
   for (int i = timesteps.size() - 1; i >= 0; i--) {
     cout << "step " << timesteps.size() - 1 - i << "\n";
 #if __DEBUG__
-  auto now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
+    auto now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
 #endif
     auto latent_prev = latent;
     auto t_emb = get_timestep_embedding(timesteps[i]);
 #if __DEBUG__
-  now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
+    now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
 #endif
-    auto unconditional_latent = diffusion.diffusion_run(latent, t_emb, unconditional_text);
+    auto unconditional_latent =
+        diffusion.diffusion_run(latent, t_emb, unconditional_text);
     latent = diffusion.diffusion_run(latent, t_emb, encoded_text);
 #if __DEBUG__
-  now = std::chrono::system_clock::now();
-  std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
-            << __FUNCTION__ << "\n";
+    now = std::chrono::system_clock::now();
+    std::cout << (now - start_time) / 1ms / 1000.0 << ": " << __LINE__ << ": "
+              << __FUNCTION__ << "\n";
 #endif
 
     std::valarray<float> l(latent.data(), latent.size());
