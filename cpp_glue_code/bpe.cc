@@ -3,13 +3,16 @@
 using namespace std;
 
 vector<string> bpe::get_tokens(string line) {
-  stringstream c(line);
+  // simple alphanum+whitespace and punctions pattern
+  std::string pattern("(\\w+)</w>|(\\w+)|([[:punct:]])</w>|([[:punct:]])");
+  std::regex re(pattern, std::regex_constants::icase);
+  std::sregex_token_iterator i(line.begin(), line.end(), re);
+  std::sregex_token_iterator end_of_string;
 
   vector<string> tokens;
-  string intermediate;
-
-  while (getline(c, intermediate, ' ')) {
-    tokens.push_back(intermediate);
+  while (i != end_of_string) {
+    tokens.push_back(*i);
+    i++;
   }
   return tokens;
 }
