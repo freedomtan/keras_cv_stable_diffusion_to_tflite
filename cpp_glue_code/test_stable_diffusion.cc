@@ -202,6 +202,7 @@ int main(int argc, char *argv[]) {
     l = (l * sqrtf(1.0 - a_prev) + sqrtf(a_prev) * prev_x0);
     latent.assign(std::begin(l), std::end(l));
   }
+  diffusion.release_interpreter();
   auto decoded = run_decoder(latent);
   std::valarray<float> d(decoded.data(), decoded.size());
   d = (d + 1) / 2 * 255;

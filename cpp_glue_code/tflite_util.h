@@ -1,6 +1,7 @@
 #ifndef _STABLE_DIFFUSION_TFLITE_UTIL_H_
 #define _STABLE_DIFFUSION_TFLITE_UTIL_H_
 
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -89,6 +90,10 @@ class diffusion_runner : tflite_runner {
     return o;
   }
 
+  void release_interpreter() {
+   auto i = interpreter.release();
+   delete i;
+  }
  private:
   std::unique_ptr<tflite::Interpreter> interpreter;
 };
