@@ -1,5 +1,13 @@
 # Converting Keras CV Stable Diffusion models to tflite
 
+## environments
+TensorFlow: 2.12.1
+keras: 2.12.0
+keras-cv: 0.4.2
+
+Note that different version of TensorFlow and Keras could generate
+incompatible tflite files.
+
 ## Conversion scripts
 
 ### fp32 
