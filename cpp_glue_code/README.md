@@ -6,7 +6,7 @@ To run Stable Diffusion end-to-end on Android, we need some glue code
 * [test_stable_diffusion.cc](test_stable_diffusion.cc): run the 3 models with glue code
 
 # How to build 
-* set ANDROID_NDK_HOME environment variable
+* set ANDROID_NDK_HOME environment variable, preferrably android ndk r21 or earlier because of TF 2.12
 * `bazel build --config android_arm64 :test_stable_diffusion`  to build binary for android_arm64
   (`bazel build --config android_arm64 :test_stable_diffusion` to build binary for host machine)
   
